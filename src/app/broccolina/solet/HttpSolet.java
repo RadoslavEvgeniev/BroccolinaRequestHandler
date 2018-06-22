@@ -8,5 +8,7 @@ public interface HttpSolet {
 
     boolean isInitialized();
 
+    SoletConfig getSoletConfig();
+
     void service(HttpSoletRequest request, HttpSoletResponse response) throws IOException;
 }
