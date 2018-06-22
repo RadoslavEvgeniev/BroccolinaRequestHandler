@@ -156,7 +156,7 @@ public class ApplicationLoadingService {
             JarEntry currentEntry = jarFileEntries.nextElement();
 
             if (!currentEntry.isDirectory() && currentEntry.getName().endsWith(".class")) {
-                URL[] urls = new URL[] {
+                URL[] urls = new URL[]{
                         new URL("jar:file:" + cannonicalPath + "!/")
                 };
 
@@ -195,7 +195,18 @@ public class ApplicationLoadingService {
         }
     }
 
-    private Map<String, HttpSolet> loadApplicationFromFolder(String applicationFolderPath, String applicationName) throws IOException {
+    private void loadApplicationFromFolder(String applicationRootFolderPath, String applicationName) throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        this.applicationFolderPath = applicationRootFolderPath;
+
+        String classesRootFolderPath = applicationRootFolderPath + "classes" + File.separator;
+        String librariesRootFolderPath = applicationRootFolderPath + "lib" + File.separator;
+
+        this.loadApplicationLibraries(librariesRootFolderPath, applicationName);
+        this.loadApplicationClasses(classesRootFolderPath, applicationName);
+
+    }
+
+    public Map<String, HttpSolet> loadApplications(String applicationFolderPath) throws IOException {
         this.loadedApplications = new HashMap<>();
 
         File applicationsFolder = new File(applicationFolderPath);
@@ -209,7 +220,11 @@ public class ApplicationLoadingService {
             for (File applicationJarFile : allJarFiles) {
                 this.jarFileUnzipService.unzipJar(applicationJarFile);
 
-                this.loadApplicationFromFolder(applicationJarFile.getCanonicalPath().replace(".jar", File.separator), applicationJarFile.getName().replace(".jar", ""));
+                try {
+                    this.loadApplicationFromFolder(applicationJarFile.getCanonicalPath().replace(".jar", File.separator), applicationJarFile.getName().replace(".jar", ""));
+                } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
