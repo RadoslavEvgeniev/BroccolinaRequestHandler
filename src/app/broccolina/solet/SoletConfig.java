@@ -1,10 +1,10 @@
 package app.broccolina.solet;
 
-import java.util.HashMap;
+import java.util.Map;
 
 public interface SoletConfig {
 
-    HashMap<String, Object> getAttributes();
+    Map<String, Object> getAttributes();
 
     void setAttribute(String name, Object attribute);
 
