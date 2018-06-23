@@ -74,7 +74,9 @@ public class SoletDispatcher implements RequestHandler {
             this.sessionManagementService.sendSessionIfExistent(request, response);
 
             this.sessionManagementService.clearInvalidSessions();
-
+//            response.setStatusCode(HttpStatus.OK);
+//            response.addHeader("Content-Type", "text/html");
+//            response.setContent("Hi from broko".getBytes());
             new Writer().writeBytes(response.getBytes(), response.getOutputStream());
 
             this.hasIntercepted = true;
