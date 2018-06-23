@@ -54,7 +54,7 @@ public abstract class BaseHttpSolet implements HttpSolet {
     }
 
     @Override
-    public void service(HttpSoletRequest request, HttpSoletResponse response) throws IOException {
+    public void service(HttpSoletRequest request, HttpSoletResponse response) {
         if (request.getMethod().equals("GET")) {
             this.doGet(request, response);
         } else if (request.getMethod().equals("POST")) {
