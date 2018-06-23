@@ -49,6 +49,11 @@ public abstract class BaseHttpSolet implements HttpSolet {
     }
 
     @Override
+    public boolean isInitialized() {
+        return this.isInitialized;
+    }
+
+    @Override
     public SoletConfig getSoletConfig() {
         return this.soletConfig;
     }
