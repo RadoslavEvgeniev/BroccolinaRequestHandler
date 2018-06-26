@@ -219,7 +219,6 @@ public class ApplicationLoadingService {
 
             for (File applicationJarFile : allJarFiles) {
                 this.jarFileUnzipService.unzipJar(applicationJarFile);
-
                 try {
                     this.loadApplicationFromFolder(applicationJarFile.getCanonicalPath().replace(".jar", File.separator), applicationJarFile.getName().replace(".jar", ""));
                 } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
