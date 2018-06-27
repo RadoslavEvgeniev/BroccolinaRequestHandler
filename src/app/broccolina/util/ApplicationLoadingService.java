@@ -36,7 +36,7 @@ public class ApplicationLoadingService {
     private void loadSolet(Class soletClass, String applicationName) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         if (soletClass == null
                 || soletClass.getSuperclass() == null
-                || !soletClass.getSuperclass().getName().equals(BaseHttpSolet.class.getSimpleName())) {
+                || !soletClass.getSuperclass().getName().equals(BaseHttpSolet.class.getName())) {
             return;
         }
 
@@ -65,15 +65,15 @@ public class ApplicationLoadingService {
                             .orElse(null);
 
                     if (extractedMethod.getName().equals("service")) {
-                        Class<?>[] requestParameters = extractedMethod.getParameterTypes();
+                        Class<?>[] requestedParameters = extractedMethod.getParameterTypes();
 
                         Object proxyRequest = Proxy.newProxyInstance(
-                                requestParameters[0].getClassLoader(),
-                                new Class[]{requestParameters[0]},
+                                requestedParameters[0].getClassLoader(),
+                                new Class[]{requestedParameters[0]},
                                 (requestProxy, requestMethod, requestArgs) -> {
                                     Method extractedRequestMethod = Arrays
-                                            .stream(soletClass.getMethods())
-                                            .filter(m -> m.getName().equals(method.getName()))
+                                            .stream(args[0].getClass().getMethods())
+                                            .filter(m -> m.getName().equals(requestMethod.getName()))
                                             .findFirst()
                                             .orElse(null);
 
@@ -82,12 +82,12 @@ public class ApplicationLoadingService {
                         );
 
                         Object proxyResponse = Proxy.newProxyInstance(
-                                requestParameters[1].getClassLoader(),
-                                new Class[]{requestParameters[1]},
+                                requestedParameters[1].getClassLoader(),
+                                new Class[]{requestedParameters[1]},
                                 (responseProxy, responseMethod, responseArgs) -> {
                                     Method extractedResponseMethod = Arrays
-                                            .stream(soletClass.getMethods())
-                                            .filter(m -> m.getName().equals(method.getName()))
+                                            .stream(args[1].getClass().getMethods())
+                                            .filter(m -> m.getName().equals(responseMethod.getName()))
                                             .findFirst()
                                             .orElse(null);
 
@@ -123,7 +123,7 @@ public class ApplicationLoadingService {
                 return;
             }
 
-            String className = (packageName.replace("classes.", "")) + currentFile.getName().replace(".class", "").replace(".", "/");
+            String className = (packageName.replace("classes.", "")) + currentFile.getName().replace(".class", "").replace("/", ".");
 
             Class currentClassFile = classLoader.loadClass(className);
 
@@ -155,7 +155,7 @@ public class ApplicationLoadingService {
         while (jarFileEntries.hasMoreElements()) {
             JarEntry currentEntry = jarFileEntries.nextElement();
 
-            if (!currentEntry.isDirectory() && currentEntry.getName().endsWith(".class")) {
+            if (!currentEntry.isDirectory() && currentEntry.getRealName().endsWith(".class")) {
                 URL[] urls = new URL[]{
                         new URL("jar:file:" + cannonicalPath + "!/")
                 };
@@ -163,7 +163,7 @@ public class ApplicationLoadingService {
                 URLClassLoader urlClassLoader = new URLClassLoader(urls, Thread.currentThread().getContextClassLoader());
                 Thread.currentThread().setContextClassLoader(urlClassLoader);
 
-                String className = currentEntry.getName().replace(".class", "").replace("/", ".");
+                String className = currentEntry.getRealName().replace(".class", "").replace("/", ".");
 
                 Class currentClassFile = urlClassLoader.loadClass(className);
 
@@ -208,25 +208,31 @@ public class ApplicationLoadingService {
 
     public Map<String, HttpSolet> loadApplications(String applicationFolderPath) throws IOException {
         this.loadedApplications = new HashMap<>();
+        try {
+            File applicationsFolder = new File(applicationFolderPath);
 
-        File applicationsFolder = new File(applicationFolderPath);
+            if (applicationsFolder.exists() && applicationsFolder.isDirectory()) {
+                List<File> allJarFiles = Arrays
+                        .stream(applicationsFolder.listFiles())
+                        .filter(f -> this.isJarFile(f))
+                        .collect(Collectors.toList());
 
-        if (applicationsFolder.exists() && applicationsFolder.isDirectory()) {
-            List<File> allJarFiles = Arrays
-                    .stream(applicationsFolder.listFiles())
-                    .filter(f -> this.isJarFile(f))
-                    .collect(Collectors.toList());
+                for (File applicationJarFile : allJarFiles) {
+                    this.jarFileUnzipService.unzipJar(applicationJarFile);
 
-            for (File applicationJarFile : allJarFiles) {
-                this.jarFileUnzipService.unzipJar(applicationJarFile);
-                try {
                     this.loadApplicationFromFolder(applicationJarFile.getCanonicalPath().replace(".jar", File.separator), applicationJarFile.getName().replace(".jar", ""));
-                } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
-                    e.printStackTrace();
                 }
+
             }
+        } catch
+                (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException
+                        e) {
+            e.printStackTrace();
         }
 
         return this.loadedApplications;
     }
+
+
 }
+

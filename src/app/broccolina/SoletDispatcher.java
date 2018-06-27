@@ -87,13 +87,13 @@ public class SoletDispatcher implements RequestHandler {
     }
 
     private HttpSolet findSoletCandidate(HttpSoletRequest request, HttpSoletResponse response) {
-        String reuestUrl = request.getRequestUrl();
+        String requestUrl = request.getRequestUrl();
 
-        Pattern applicationRouteMatchPattern = Pattern.compile("/[a-zA-Z0-9]+/");
-        Matcher applicationRouteMatcher = applicationRouteMatchPattern.matcher(reuestUrl);
+        Pattern applicationRouteMatchPattern = Pattern.compile("\\/[a-zA-Z0-9]+\\/");
+        Matcher applicationRouteMatcher = applicationRouteMatchPattern.matcher(requestUrl);
 
-        if (this.soletMap.containsKey(reuestUrl)) {
-            return this.soletMap.get(reuestUrl);
+        if (this.soletMap.containsKey(requestUrl)) {
+            return this.soletMap.get(requestUrl);
         }
 
         if (applicationRouteMatcher.find()) {
