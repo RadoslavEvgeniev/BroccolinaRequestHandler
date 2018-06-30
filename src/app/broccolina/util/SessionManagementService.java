@@ -14,6 +14,10 @@ public class SessionManagementService {
         this.sessionStorage = new HttpSessionStorageImpl();
     }
 
+    public HttpSessionStorage getSessionStorage() {
+        return this.sessionStorage;
+    }
+
     public void initSessionIfExistent(HttpRequest request) {
         if (request.getCookies().containsKey(SESSION_KEY)) {
             HttpCookie sessionCookie = request.getCookies().get(SESSION_KEY);
@@ -33,11 +37,10 @@ public class SessionManagementService {
         if (request.getSession() != null) {
             if (this.sessionStorage.getById(request.getSession().getId()) == null) {
                 this.sessionStorage.addSession(request.getSession());
+                response.addCookie(SESSION_KEY, request.getSession().getId());
             }
 
-            if (request.getSession().isValid()) {
-                response.addCookie(SESSION_KEY, request.getSession().getId());
-            } else {
+            if (!request.getSession().isValid()) {
                 response.addCookie(SESSION_KEY, "removed; expires=" + new Date(0).toString());
             }
         }
