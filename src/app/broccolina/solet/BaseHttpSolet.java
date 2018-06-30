@@ -2,8 +2,6 @@ package app.broccolina.solet;
 
 import app.javache.http.HttpStatus;
 
-import java.io.IOException;
-
 public abstract class BaseHttpSolet implements HttpSolet {
 
     private boolean isInitialized;
